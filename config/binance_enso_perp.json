@@ -1,0 +1,20 @@
+{
+    "exchange": "binance",
+    "symbol": "ENSO/USDT:USDT",
+
+
+    "enable_depth_monitor": false,
+    "depth_alert_interval": 300,
+    "min_depth_notional": 30000,
+    "depth_bps_thresholds": [
+        {"bps": 100, "notional": 40000},
+        {"bps": 200, "notional": 80000}
+    ],
+  
+    "enable_large_trades": true,
+    "min_trade_amount": 25000,
+  
+    "enable_ema_ratio": false,
+    "ema_window": 15,
+    "ema_timeframe": 300
+  }
