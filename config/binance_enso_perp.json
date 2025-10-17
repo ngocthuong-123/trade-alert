@@ -1,7 +1,9 @@
 {
     "exchange": "binance",
     "symbol": "ENSO/USDT:USDT",
-
+    "group_id": "-1003176891577",
+    "topic_id": "",
+    "dp": 3,
 
     "enable_depth_monitor": false,
     "depth_alert_interval": 300,
