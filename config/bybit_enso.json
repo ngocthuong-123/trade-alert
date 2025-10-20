@@ -1,21 +1,21 @@
 {
-    "exchange": "binance",
-    "symbol": "ENSO/USDT:USDT",
+    "exchange": "bybit",
+    "symbol": "ENSO/USDT",
     "group_id": "-1003176891577",
     "topic_id": "",
     "dp": 3,
 
-    "enable_depth_monitor": false,
+    "enable_depth_monitor": true,
     "depth_alert_interval": 300,
     "min_depth_notional": 30000,
     "depth_bps_thresholds": [
         {"bps": 100, "notional": 40000},
         {"bps": 200, "notional": 80000}
     ],
-  
+
     "enable_large_trades": true,
-    "min_trade_amount": 50000,
-  
+    "min_trade_amount": 5000,
+
     "enable_ema_ratio": true,
     "ema_window": 15,
     "ema_timeframe": 300

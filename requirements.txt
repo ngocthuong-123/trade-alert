@@ -1,5 +1,18 @@
-python-dotenv
-ccxt
-pandas
-numpy
-aiohttp
+# --- Core ---
+python-dotenv==1.0.1
+pandas==2.2.2
+numpy==1.26.4
+aiohttp==3.10.5
+requests==2.32.3
+ujson==5.10.0
+
+# --- Binance websocket client ---
+python-binance==1.0.19
+
+# --- Multi-exchange WebSocket (Bybit, OKX, etc.) ---
+ccxt==4.3.59
+ccxtpro==0.9.105   # hoặc mới hơn nếu có quyền license
+
+# --- Logging & async utilities ---
+websockets==12.0
+asyncio==3.4.3

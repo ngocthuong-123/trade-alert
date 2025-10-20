@@ -1,8 +1,8 @@
 {
     "exchange": "binance",
-    "symbol": "ENSO/USDT:USDT",
-    "group_id": "-1003176891577",
-    "topic_id": "",
+    "symbol": "ENSO/USDT",
+    "group_id": "-1003109149278",
+    "topic_id": "2",
     "dp": 3,
 
     "enable_depth_monitor": false,
@@ -14,9 +14,9 @@
     ],
   
     "enable_large_trades": true,
-    "min_trade_amount": 50000,
+    "min_trade_amount": 500,
   
-    "enable_ema_ratio": true,
+    "enable_ema_ratio": false,
     "ema_window": 15,
     "ema_timeframe": 300
   }
