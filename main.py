@@ -83,8 +83,8 @@ def setup_exchange(exchange_id, symbol=None):
     return exchange_class(exchange_config)
 
 
-# ====== Lọc giao dịch lớn ======
-async def filter_large_trades(
+# ====== Lọc giao dịch lớn với mean 60m ======
+async def filter_large_trades_with_mean(
     df, symbol, min_trade_amount, exchange_name, market_type="", config=None
 ):
     global all_trades
@@ -108,22 +108,32 @@ async def filter_large_trades(
             continue
 
         icon = "🟢" if side.lower() == "buy" else "🔴"
+
+        # Tính mean 60m của TẤT CẢ large trades (bao gồm trade hiện tại)
         mean_large_notional = 0
         if len(all_trades) > 0:
             trades_df = pd.DataFrame(all_trades)
             trades_df["notional"] = trades_df["amount"] * trades_df["price"]
-            trades_df["timestamp_sec"] = trades_df["timestamp"] // 1000
-            recent = trades_df[trades_df["timestamp_sec"] >= (int(time.time()) - 3600)]
-            large_trades = recent[recent["notional"] >= min_trade_amount]
+            
+            # DEBUG: Log thông tin tính toán mean
+            logger.info(f"DEBUG MEAN CALC: all_trades count: {len(all_trades)}")
+            logger.info(f"DEBUG MEAN CALC: min_trade_amount: {min_trade_amount}")
+            
+            # Tính mean từ tất cả large trades có sẵn
+            large_trades = trades_df[trades_df["notional"] >= min_trade_amount]
+            logger.info(f"DEBUG MEAN CALC: large_trades count: {len(large_trades)}")
+            
             if not large_trades.empty:
                 mean_large_notional = large_trades["notional"].mean()
+                logger.info(f"DEBUG MEAN CALC: mean_large_notional: {mean_large_notional}")
 
         now_utc = datetime.now(UTC_TZ).strftime("%Y-%m-%d %H:%M:%S")
+        dp = config.get('dp', 4)
         message = (
             f"⚠️ LARGE TRADE ALERT!\n"
             f"📊 {exchange_name.upper()} {market_type}\n"
             f"🕒 {now_utc} (UTC)\n"
-            f"{icon} {side.upper()} {total_amount/1000:.2f}k @ {avg_price:.{config.get('dp',4)}f} "
+            f"{icon} {side.upper()} {total_amount/1000:.2f}k @ {avg_price:.{dp}f} "
             f"~ ${total_notional/1000:.2f}k [mean 60m: ${mean_large_notional/1000:.2f}k]\n"
             f"------------"
         )
@@ -142,10 +152,12 @@ async def process_trade_batch(symbol, config, exchange_name, market_type):
             continue
 
         df = pd.DataFrame(trade_buffer)
+        # Thêm trades vào all_trades trước khi filter
         all_trades.extend(trade_buffer)
         trade_buffer = []
 
-        await filter_large_trades(
+        # Tính mean 60m sau khi đã thêm trades vào all_trades
+        await filter_large_trades_with_mean(
             df, symbol, min_trade_amount, exchange_name, market_type, config
         )
 
@@ -163,6 +175,9 @@ async def watch_binance_trades(symbol, config):
         else f"wss://stream.binance.com:9443/ws/{symbol_ws}@trade"
     )
     logger.info(f"📡 Connecting to Binance {market_type or 'SPOT'} stream: {ws_url}")
+    logger.info(f"DEBUG BINANCE: symbol_ws = {symbol_ws}")
+    logger.info(f"DEBUG BINANCE: is_perp = {is_perp}")
+    logger.info(f"DEBUG BINANCE: market_type = {market_type}")
 
     async with aiohttp.ClientSession() as session:
         async with session.ws_connect(ws_url) as ws:
@@ -172,6 +187,17 @@ async def watch_binance_trades(symbol, config):
                     trade = json.loads(msg.data)
                     if "p" not in trade:
                         continue
+                    
+                    # DEBUG: Log raw data từ Binance (chỉ log khi có large trade)
+                    notional = float(trade["q"]) * float(trade["p"])
+                    if notional >= 5000:  # Chỉ log khi trade >= $5k
+                        logger.info(f"DEBUG BINANCE RAW DATA: {trade}")
+                        logger.info(f"DEBUG BINANCE TIMESTAMP: {trade.get('T', 'N/A')}")
+                        logger.info(f"DEBUG BINANCE PRICE: {trade.get('p', 'N/A')}")
+                        logger.info(f"DEBUG BINANCE QUANTITY: {trade.get('q', 'N/A')}")
+                        logger.info(f"DEBUG BINANCE SIDE: {trade.get('m', 'N/A')}")
+                        logger.info(f"DEBUG BINANCE NOTIONAL: {notional}")
+                    
                     trade_buffer.append(
                         {
                             "timestamp": int(trade["T"]),
