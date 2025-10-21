@@ -1,0 +1,10 @@
+{
+    "exchange": "bybit",
+    "symbol": "A8/USDT",
+    "group_id": "-1003151091776",
+    "topic_id": "",
+    "dp": 3,
+    "volume_threshold": 50000,
+    "notification_time": "09:00",
+    "timezone": "VN"
+}
